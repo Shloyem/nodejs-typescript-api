@@ -41,8 +41,9 @@ itemsRouter.get("/:id", async (req: Request, res: Response) => {
 
     if (item) {
       res.status(200).send(item);
+    } else {
+      res.status(404).send("item not found");
     }
-    res.status(404).send("item not found");
   } catch (e) {
     res.status(500).send((e as Error).message);
   }
@@ -61,7 +62,7 @@ itemsRouter.post("/", async (req: Request, res: Response) => {
 });
 
 // PUT items/:id
-itemsRouter.post("/:id", async (req: Request, res: Response) => {
+itemsRouter.put("/:id", async (req: Request, res: Response) => {
   try {
     const id: number = parseInt(req.params.id, 10);
     const itemUpdate: BaseItem = req.body;
@@ -70,26 +71,26 @@ itemsRouter.post("/:id", async (req: Request, res: Response) => {
     if (existingItem) {
       const updatedItem = await ItemService.update(id, itemUpdate);
       res.status(200).json(updatedItem);
+    } else {
+      const createdItem: Item = await ItemService.create(itemUpdate);
+      res.status(201).json(createdItem);
     }
-
-    const createdItem: Item = await ItemService.create(itemUpdate);
-    res.status(201).json(createdItem);
   } catch (e) {
     res.status(500).send((e as Error).message);
   }
 });
 
 // DELETE items/:id
-itemsRouter.post("/:id", async (req: Request, res: Response) => {
+itemsRouter.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id: number = parseInt(req.params.id, 10);
     const deleted: boolean = await ItemService.remove(id);
 
-    if (!deleted) {
+    if (deleted) {
+      res.status(204).send();
+    } else {
       res.status(404).send("item not found");
     }
-
-    res.status(204);
   } catch (e) {
     res.status(500).send((e as Error).message);
   }
